@@ -1,23 +1,18 @@
 package ticketingsystem;
 
-import java.util.Bitset;
-
-// Staring with Index 1
+import java.util.BitSet;
 
 // !!?? check for IndexOutOfBoundary??
 // !!?? arrival included??
 class Seat {
-    Bitset taken;
+    BitSet taken;
 
-    Seat(int stationnum){
-        taken = new Bitset(stationnum);
+    public Seat(int stationnum){
+        taken = new BitSet(stationnum);
     }
 
-    public int checkAvail(int departure, int arrival){
-        if(taken.get(departure, arrival+1).isEmpty()){
-            return 1;
-        }
-        return 0;
+    public boolean checkAvail(int departure, int arrival){
+        return taken.get(departure, arrival+1).isEmpty();
     }
 
     public void orderSeat(int departure, int arrival){
@@ -30,68 +25,51 @@ class Seat {
     
 }
 
-// !!?? consider deleting this layer
-// directly init seats[coachnum*seatnum] in Train
-class Coach {
-    Seat seats[];
-
-    Coach(int seatnum, int stationnum){
-        seats = new Seat[seatnum];
-        for(Seat s : seats){
-            s = new Seat(stationnum);
-        }
-    }    
-    public int inquiry(int departure, int arrival){
-        int ticketsLeft = 0;
-        for(Seat s : seats){
-            ticketsLeft += s.checkAvail(departure, arrival);
-        }
-        return ticketsLeft;
-    }    
-    // return seatID
-    public int buyTicket(int departure, int arrival){
-        for(int id=0; id<seat.length; id++){
-            if(seats[id].checkAvail(departure, arrival)){
-                seats[id].orderSeat(departure, arrival);
-                return id;
-            }
-        }
-        return -1;
-    }  
-
-}
-
 public class Train {
-    Coach coaches[];
+    Seat seats[];
+    int coachnum = 8;
+    int seatnum = 100;
 
-    Train(int coachnum, int seatnum, int stationnum){
-        coaches = new Coach[coachnum];
-        for(Coach c : coaches){
-            c = new Coach(seatnum, stationnum);
+    public Train(int coachnum, int seatnum, int stationnum){
+        this.coachnum = coachnum;
+        this.seatnum = seatnum;
+        seats = new Seat[coachnum*seatnum];
+        for(int i=0; i<seats.length; i++){
+            seats[i] = new Seat(stationnum);
         }
+    }
+
+    public int testTest(){
+        return 1;
     }
 
     public int inquiry(int departure, int arrival){
         int ticketsLeft = 0;
-        for(Coach c : coaches){
-            ticketsLeft += c.inquiry(departure, arrival);
+        for(int i=0; i<seats.length; i++){
+            ticketsLeft += seats[i].checkAvail(departure, arrival)?1:0;
         }
         return ticketsLeft;
     }    
 
     public Ticket buyTicket(int departure, int arrival){
-        for(int i=0; i<coaches.length; i++){
-            int tmp = coaches[i].buyTicket(departure, arrival);
-            if(tmp != -1){
+        for(int i=0; i<seats.length; i++){
+            boolean tmp = seats[i].checkAvail(departure, arrival);
+            if(tmp){
+                seats[i].orderSeat(departure, arrival);
                 Ticket t = new Ticket();
-                t.coach = i;
-                t.seat = tmp;
-                t.departure = departure;
-                t.arrival = arrival;
+                t.coach = (i/seatnum) + 1;
+                t.seat = (i%seatnum) + 1;
+                t.departure = departure + 1;
+                t.arrival = arrival + 1;
             }
         }
         return null;
     }  
+
+    public void refundTicket(Ticket t){
+        int sid = (t.coach-1)*seatnum + t.seat;
+        seats[sid].clearSeat(t.departure-1, t.arrival-1);
+    }
 
 
 }

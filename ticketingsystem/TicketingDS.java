@@ -1,11 +1,16 @@
 package ticketingsystem;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class TicketingDS implements TicketingSystem {
-	private int routenum = 5;
-	private int coachnum = 8;
-	private int seatnum = 100;
-	private int stationnum = 10;
-	private int threadnum = 16;
+	int routenum = 5;
+	int coachnum = 8;
+	int seatnum = 100;
+	int stationnum = 10;
+	int threadnum = 16;
+
+	static AtomicLong tid;
 
 	Train trains[];
 
@@ -16,34 +21,45 @@ public class TicketingDS implements TicketingSystem {
 		this.stationnum = stationnum;
 		this.threadnum = threadnum;
 
-		trains = new Train[]
+
+		trains = new Train[routenum];
+		for(int i=0; i<trains.length; i++) {
+			trains[i] = new Train(coachnum, seatnum, stationnum);
+		}
 
 
+		
 	}
 
 	
 	//ToDo
+	// =========== BE AWARE ============ 
+	// ---------------------------------
+	// ALL PARAMS INDEX STARTING FROM 1 
+	// =================================
 	public Ticket buyTicket(String passenger, int route, int departure, int arrival){
-
-		return new Ticket();
+		Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
+		if(t == null){
+			return null;
+		}
+		t.tid = tid.getAndIncrement();
+		t.passenger = passenger;
+		return t;
 	}
 	
 	public int inquiry(int route, int departure, int arrival){
-		
-		return 1;
+		return trains[route-1].inquiry(departure-1, arrival-1);
 	}
 
-	public boolean refundTicket(Ticket ticket){
-
-
-
+	public boolean refundTicket(Ticket t){
+		trains[t.route-1].refundTicket(t);
 		return true;
 	}
 
-	public boolean buyTicketReplay(Ticket ticket){
+	public boolean buyTicketReplay(Ticket t){
 		return true;
 	}
-	public boolean refundTicketReplay(Ticket ticket){
+	public boolean refundTicketReplay(Ticket t){
 		return true;
 	}	
 }
