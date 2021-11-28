@@ -7,12 +7,16 @@ public class TicketingDS implements TicketingSystem {
 	private int stationnum = 10;
 	private int threadnum = 16;
 
+	Train trains[];
+
 	public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
 		this.routenum = routenum;
 		this.coachnum = coachnum;
 		this.seatnum = seatnum;
 		this.stationnum = stationnum;
 		this.threadnum = threadnum;
+
+		trains = new Train[]
 
 
 	}
@@ -31,5 +35,15 @@ public class TicketingDS implements TicketingSystem {
 
 	public boolean refundTicket(Ticket ticket){
 
+
+
 		return true;
-	}}
+	}
+
+	public boolean buyTicketReplay(Ticket ticket){
+		return true;
+	}
+	public boolean refundTicketReplay(Ticket ticket){
+		return true;
+	}	
+}
