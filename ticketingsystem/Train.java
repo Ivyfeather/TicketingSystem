@@ -5,10 +5,11 @@ import java.util.BitSet;
 // !!?? check for IndexOutOfBoundary??
 // !!?? arrival included??
 class Seat {
-    BitSet taken;
+    // !! public
+    public BitSet taken;
 
     public Seat(int stationnum){
-        taken = new BitSet(stationnum);
+        taken = new BitSet(stationnum+1);
     }
 
     public boolean checkAvail(int departure, int arrival){
@@ -26,11 +27,15 @@ class Seat {
 }
 
 public class Train {
+    int route;
     Seat seats[];
     int coachnum = 8;
     int seatnum = 100;
 
-    public Train(int coachnum, int seatnum, int stationnum){
+    final boolean debug = false;
+
+    public Train(int route, int coachnum, int seatnum, int stationnum){
+        this.route = route;
         this.coachnum = coachnum;
         this.seatnum = seatnum;
         seats = new Seat[coachnum*seatnum];
@@ -39,11 +44,19 @@ public class Train {
         }
     }
 
+    public void showSeatStatus(){
+        if(!debug) {return;}
+        for(int i=0; i<seats.length; i++){
+            System.err.println("Train " + route + " coach " + (i/seatnum+1) + " seat " + (i%seatnum+1) + " status " + seats[i].taken);
+        }
+    }
+
     public int testTest(){
         return 1;
     }
 
     public int inquiry(int departure, int arrival){
+        showSeatStatus();
         int ticketsLeft = 0;
         for(int i=0; i<seats.length; i++){
             ticketsLeft += seats[i].checkAvail(departure, arrival)?1:0;
@@ -52,22 +65,30 @@ public class Train {
     }    
 
     public Ticket buyTicket(int departure, int arrival){
+        // System.out.println("TE "+seats.length);
+        showSeatStatus();
+
         for(int i=0; i<seats.length; i++){
             boolean tmp = seats[i].checkAvail(departure, arrival);
             if(tmp){
                 seats[i].orderSeat(departure, arrival);
                 Ticket t = new Ticket();
+                t.route = route + 1;
                 t.coach = (i/seatnum) + 1;
                 t.seat = (i%seatnum) + 1;
                 t.departure = departure + 1;
                 t.arrival = arrival + 1;
+                return t;
             }
         }
+        
         return null;
     }  
 
     public void refundTicket(Ticket t){
-        int sid = (t.coach-1)*seatnum + t.seat;
+        showSeatStatus();
+
+        int sid = (t.coach-1)*seatnum + (t.seat-1);
         seats[sid].clearSeat(t.departure-1, t.arrival-1);
     }
 

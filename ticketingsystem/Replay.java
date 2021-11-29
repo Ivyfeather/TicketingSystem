@@ -63,7 +63,7 @@ public class Replay{
 	String res;
 
   }
-  
+// Scanning line and parse history
   private static boolean parseline(ArrayList<HistoryLine> historyList, String line) {
 	Scanner linescanner = new Scanner(line);
 	if (line.equals("")) {

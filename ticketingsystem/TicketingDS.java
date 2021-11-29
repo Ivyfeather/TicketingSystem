@@ -1,7 +1,7 @@
 package ticketingsystem;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.*;
 
 public class TicketingDS implements TicketingSystem {
 	int routenum = 5;
@@ -10,7 +10,9 @@ public class TicketingDS implements TicketingSystem {
 	int stationnum = 10;
 	int threadnum = 16;
 
-	static AtomicLong tid;
+	AtomicBoolean state = new AtomicBoolean(false);
+
+	AtomicLong tid = new AtomicLong(0);
 
 	Train trains[];
 
@@ -24,36 +26,61 @@ public class TicketingDS implements TicketingSystem {
 
 		trains = new Train[routenum];
 		for(int i=0; i<trains.length; i++) {
-			trains[i] = new Train(coachnum, seatnum, stationnum);
+			trains[i] = new Train(i, coachnum, seatnum, stationnum);
 		}
 
-
-		
 	}
 
 	
 	//ToDo
+	void lock(){
+		while(state.getAndSet(true)){}
+	}
+	void unlock(){
+		state.set(false);
+	}
+
+
 	// =========== BE AWARE ============ 
 	// ---------------------------------
 	// ALL PARAMS INDEX STARTING FROM 1 
 	// =================================
 	public Ticket buyTicket(String passenger, int route, int departure, int arrival){
-		Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
-		if(t == null){
-			return null;
+		lock();
+		try{
+			Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
+			if(t == null){
+				// System.out.println("buy Ticket failed"+ route + " " + departure + " " + arrival);
+				System.exit(1);
+				return null;
+			}
+			t.tid = tid.getAndIncrement();
+			t.passenger = passenger;
+			return t;
+
+		} finally {
+			unlock();
 		}
-		t.tid = tid.getAndIncrement();
-		t.passenger = passenger;
-		return t;
 	}
 	
 	public int inquiry(int route, int departure, int arrival){
-		return trains[route-1].inquiry(departure-1, arrival-1);
+		lock();
+		try{
+			return trains[route-1].inquiry(departure-1, arrival-1);
+		} finally {
+			unlock();
+		}
 	}
 
 	public boolean refundTicket(Ticket t){
-		trains[t.route-1].refundTicket(t);
-		return true;
+		// System.out.println("refunding "+ t.route + " " + t.departure + " " + t.arrival);
+		lock();
+		try{
+			trains[t.route-1].refundTicket(t);
+			return true;
+		} finally {
+			unlock();
+		}
 	}
 
 	public boolean buyTicketReplay(Ticket t){
