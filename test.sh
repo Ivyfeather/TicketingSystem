@@ -7,9 +7,13 @@ javac -encoding UTF-8 -cp . ticketingsystem/Test.java
 
 echo  "Thread: 8 testNum 10万" >> logtest
 java -cp . ticketingsystem/Test 8 100000 >> logtest
+clear
+cat logtest
 
 echo  "Thread: 16 testNum 10万" >> logtest
 java -cp . ticketingsystem/Test 16 100000 >> logtest
+clear
+cat logtest
 
 echo  "Thread: 32 testNum 10万" >> logtest
 java -cp . ticketingsystem/Test 32 100000 >> logtest
