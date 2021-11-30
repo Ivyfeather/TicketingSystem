@@ -31,7 +31,7 @@ public class Test {
 
 	static int testnum = 1000000; //input
 	final static int retpc = 10; // return ticket operation is 10% percent
-	final static int buypc = 20; // buy ticket operation is 30% percent
+	final static int buypc = 40; // buy ticket operation is 30% percent
 	final static int inqpc = 100; //inquiry ticket operation is 60% percent
 
 
