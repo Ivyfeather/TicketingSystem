@@ -45,8 +45,8 @@ public class TicketingDS implements TicketingSystem {
 	// ALL PARAMS INDEX STARTING FROM 1 
 	// =================================
 	public Ticket buyTicket(String passenger, int route, int departure, int arrival){
-		lock();
-		try{
+		//lock();
+		// try{
 			Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
 			if(t == null){
 				// System.out.println("buy Ticket failed"+ route + " " + departure + " " + arrival);
@@ -56,29 +56,29 @@ public class TicketingDS implements TicketingSystem {
 			t.passenger = passenger;
 			return t;
 
-		} finally {
-			unlock();
-		}
+		// } finally {
+			//unlock();
+		// }
 	}
 	
 	public int inquiry(int route, int departure, int arrival){
-		lock();
-		try{
+		//lock();
+		// try{
 			return trains[route-1].inquiry(departure-1, arrival-1);
-		} finally {
-			unlock();
-		}
+		// } finally {
+			//unlock();
+		// }
 	}
 
 	public boolean refundTicket(Ticket t){
 		// System.out.println("refunding "+ t.route + " " + t.departure + " " + t.arrival);
-		lock();
-		try{
+		//lock();
+		// try{
 			trains[t.route-1].refundTicket(t);
 			return true;
-		} finally {
-			unlock();
-		}
+		// } finally {
+			//unlock();
+		// }
 	}
 
 	public boolean buyTicketReplay(Ticket t){

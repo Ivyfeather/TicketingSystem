@@ -25,5 +25,5 @@ hs_err_pid*
 history 
 trace
 *.bak
-testlog
-testDone
+logtest
+donetest
