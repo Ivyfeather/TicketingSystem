@@ -51,7 +51,6 @@ public class TicketingDS implements TicketingSystem {
 			Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
 			if(t == null){
 				// System.out.println("buy Ticket failed"+ route + " " + departure + " " + arrival);
-				System.exit(1);
 				return null;
 			}
 			t.tid = tid.getAndIncrement();
