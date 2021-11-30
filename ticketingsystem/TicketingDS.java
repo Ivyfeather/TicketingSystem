@@ -23,7 +23,6 @@ public class TicketingDS implements TicketingSystem {
 		this.stationnum = stationnum;
 		this.threadnum = threadnum;
 
-
 		trains = new Train[routenum];
 		for(int i=0; i<trains.length; i++) {
 			trains[i] = new Train(i, coachnum, seatnum, stationnum);

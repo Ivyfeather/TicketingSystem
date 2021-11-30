@@ -9,19 +9,19 @@ class Seat {
     public BitSet taken;
 
     public Seat(int stationnum){
-        taken = new BitSet(stationnum+1);
+        taken = new BitSet(stationnum);
     }
 
     public boolean checkAvail(int departure, int arrival){
-        return taken.get(departure, arrival+1).isEmpty();
+        return taken.get(departure, arrival).isEmpty();
     }
 
     public void orderSeat(int departure, int arrival){
-        taken.set(departure, arrival+1);
+        taken.set(departure, arrival);
     }
 
     public void clearSeat(int departure, int arrival){
-        taken.clear(departure, arrival+1);
+        taken.clear(departure, arrival);
     }
     
 }

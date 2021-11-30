@@ -88,8 +88,8 @@ public class GenerateHistory {
 	  methodList.add("buyTicket");
 	  freqList.add(30);
 	  methodList.add("inquiry");
-	  freqList.add(0);
-	  totalPc = 40;
+	  freqList.add(60);
+	  totalPc = 100;
 	}
 	public static String getPassengerName() {
 		long uid = rand.nextInt(testnum);
@@ -212,8 +212,8 @@ public class GenerateHistory {
 						  if(flag){
 							print(preTime, postTime, methodList.get(j));
 						  }
-						  cnt += freqList.get(j);
 						}
+						cnt += freqList.get(j);
 					  }
 
 					  if (isSequential) {
