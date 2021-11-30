@@ -73,6 +73,8 @@ public class Test {
 		
 		final Object mLock = new Object();
 	    
+		long startAllTime = System.nanoTime();
+		
 		for (int i = 0; i< threadnum; i++) {
 	    	threads[i] = new Thread(new Runnable() {
                 public void run() {
@@ -182,14 +184,15 @@ public class Test {
 	    for (int i = 0; i< threadnum; i++) {
 	    	threads[i].join();
 	    }
-		
+		long durationAll = System.nanoTime() - startAllTime; 
+
 		double buy_time_aver = ((double) buy_time_total / buy_count_total) / 1;
 		double refund_time_aver = ((double) refund_time_total / refund_count_total) / 1;
 		double inquiry_time_aver = ((double) inquiry_time_total / inquiry_count_total) / 1;
 
 		//用一个估计的运行时间来计算吞吐量，估计方式是所有线程的平均时间
 		double average_time = ((double)(buy_time_total + refund_time_total + inquiry_time_total) / threadnum) / 1_000_000;
-		double throughput = (buy_count_total + refund_count_total + inquiry_count_total) / average_time;
+		double throughput =(double)(buy_count_total + refund_count_total + inquiry_count_total) * 1_000_000 / durationAll ;
 
 		if(verbose){			
 			System.out.println("\n------------------------------------------------------");
