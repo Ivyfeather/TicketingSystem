@@ -1,4 +1,4 @@
-for i in $( seq 1 20)
+for i in $( seq 1 $1)
 do
 	./verify.sh
 done

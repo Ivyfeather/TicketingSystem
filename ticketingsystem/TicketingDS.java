@@ -4,17 +4,18 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 
 public class TicketingDS implements TicketingSystem {
-	int routenum = 5;
-	int coachnum = 8;
+	int routenum = 10;
+	int coachnum = 10;
 	int seatnum = 100;
-	int stationnum = 10;
-	int threadnum = 16;
+	int stationnum = 20;
+	int threadnum = 64;
 
 	AtomicBoolean state = new AtomicBoolean(false);
 
 	AtomicLong tid = new AtomicLong(0);
 
 	Train trains[];
+    final boolean bypass = true;
 
 	public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
 		this.routenum = routenum;
@@ -45,7 +46,8 @@ public class TicketingDS implements TicketingSystem {
 	// ALL PARAMS INDEX STARTING FROM 1 
 	// =================================
 	public Ticket buyTicket(String passenger, int route, int departure, int arrival){
-		//lock();
+		if(bypass) return null;
+		// lock();
 		// try{
 			Ticket t = trains[route-1].buyTicket(departure-1, arrival-1);
 			if(t == null){
@@ -57,27 +59,30 @@ public class TicketingDS implements TicketingSystem {
 			return t;
 
 		// } finally {
-			//unlock();
+		// 	unlock();
 		// }
 	}
 	
 	public int inquiry(int route, int departure, int arrival){
-		//lock();
+		if(bypass) return 1;
+
+		// lock();
 		// try{
 			return trains[route-1].inquiry(departure-1, arrival-1);
 		// } finally {
-			//unlock();
+		// 	unlock();
 		// }
 	}
 
 	public boolean refundTicket(Ticket t){
-		// System.out.println("refunding "+ t.route + " " + t.departure + " " + t.arrival);
-		//lock();
+		if(bypass) return true;
+
+		// lock();
 		// try{
 			trains[t.route-1].refundTicket(t);
 			return true;
 		// } finally {
-			//unlock();
+		// 	unlock();
 		// }
 	}
 
