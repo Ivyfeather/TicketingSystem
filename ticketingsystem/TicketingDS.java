@@ -15,7 +15,7 @@ public class TicketingDS implements TicketingSystem {
 	AtomicLong tid = new AtomicLong(0);
 
 	Train trains[];
-    final boolean bypass = true;
+    final boolean bypass = false;
 
 	public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
 		this.routenum = routenum;
@@ -57,7 +57,6 @@ public class TicketingDS implements TicketingSystem {
 			t.tid = tid.getAndIncrement();
 			t.passenger = passenger;
 			return t;
-
 		// } finally {
 		// 	unlock();
 		// }

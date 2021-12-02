@@ -28,6 +28,37 @@ import java.util.BitSet;
     
 // }
 
+class InquiryTable{
+    int stationnum;
+    int [][] c;
+
+    public InquiryTable(int stationnum){
+        c = new int[stationnum][stationnum];
+    }
+
+    public int inq(int departure, int arrival){
+        return c[departure][arrival];
+    }
+
+    public void buy(int departure, int arrival){
+        int i,j;
+        for(i=0; i<arrival; i++){
+            for(j=departure+1; j<stationnum; j++){
+                c[i][j]--;
+            }
+        }
+    }
+
+    public void refund(int departure, int arrival, int left, int right){
+        int i,j;
+        
+        
+    }
+
+
+}
+
+
 public class Train {
     int route;
     BitSet seats[];
