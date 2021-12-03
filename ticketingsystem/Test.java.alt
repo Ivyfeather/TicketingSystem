@@ -29,7 +29,7 @@ public class Test {
 	final static int seatnum = 100; // seat is allocated from 1 to 20
 	final static int stationnum = 20; // station is designed from 1 to 5
 
-	static int testnum = 1000000; //input
+	static int testnum = 100000; //input
 	final static int retpc = 10; // return ticket operation is 10% percent
 	final static int buypc = 30; // buy ticket operation is 20% percent
 	final static int inqpc = 100; //inquiry ticket operation is 70% percent

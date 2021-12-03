@@ -78,8 +78,11 @@ public class Train {
     int seatnum = 100;
     int stationnum = 10;
 
-    Seat seats[];
+    Seat []seats;
     InquiryTable inqTable;
+
+    MCSLock []locks;
+    final int perLock = 1; // how many seats per lock
 
     final boolean debug = false;
 
@@ -92,6 +95,12 @@ public class Train {
         seats = new Seat[coachnum*seatnum];
         for(int i=0; i<seats.length; i++){
             seats[i] = new Seat(stationnum);
+        }
+
+        //!!!!
+        locks = new MCSLock[coachnum*seatnum/perLock];
+        for(int i = 0; i < locks.length; i++){
+            locks[i] = new MCSLock();
         }
 
         inqTable = new InquiryTable(stationnum, coachnum*seatnum);
@@ -108,6 +117,7 @@ public class Train {
 
         int length = seats.length;
         for(int i=0; i<length; i++){
+            locks[i/perLock].lock();
             
             boolean tmp = seats[i].checkAvail(departure, arrival);
             if(tmp){
@@ -126,9 +136,12 @@ public class Train {
                 if(-2 == right) right = stationnum - 2;
 
                 inqTable.update(departure, arrival, left, right, -1);
+                locks[i/perLock].unlock();
 
                 return t;
             }
+
+            locks[i/perLock].unlock();
         }
         
         return null;
@@ -136,24 +149,24 @@ public class Train {
 
     public void refundTicket(Ticket t){
 
-        int sid = (t.coach-1)*seatnum + (t.seat-1);
+        int i = (t.coach-1)*seatnum + (t.seat-1);
         int dept = t.departure - 1;
         int arr = t.arrival - 1;    
 
-        //!! left index out of boundary exception\
-        // returns -1 if no such set bit
+        // returns -1 if no such Set Bit
         int left, right;
 
-        left = (0 == dept) ? 0 : seats[sid].taken.previousSetBit(dept-1) + 1;
-        right = seats[sid].taken.nextSetBit(arr) - 1;
+        left = (0 == dept) ? 0 : seats[i].taken.previousSetBit(dept-1) + 1;
+        right = seats[i].taken.nextSetBit(arr) - 1;
         if(-2 == right) right = stationnum - 2;
 
         inqTable.update(dept, arr, left, right, 1);
         // System.err.println("WTLL");
 
-        seats[sid].clearSeat(dept, arr);
+        locks[i/perLock].lock();
+        seats[i].clearSeat(dept, arr);
+        locks[i/perLock].unlock();
 
-        
     }
 
 

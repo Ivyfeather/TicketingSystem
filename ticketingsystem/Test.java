@@ -31,8 +31,8 @@ public class Test {
 
 	final static int testnum = 100000;
 	final static int retpc = 10; // return ticket operation is 10% percent
-	final static int buypc = 30; // buy ticket operation is 30% percent
-	final static int inqpc = 100; //inquiry ticket operation is 60% percent
+	final static int buypc = 30; // buy ticket operation is 20% percent
+	final static int inqpc = 100; //inquiry ticket operation is 70% percent
 	
 	static String passengerName() {
 		Random rand = new Random();
