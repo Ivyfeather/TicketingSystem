@@ -2,6 +2,8 @@ package ticketingsystem;
 
 import java.util.*;
 import java.util.BitSet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class Seat {
     public BitSet taken;
@@ -27,6 +29,9 @@ class Seat {
 class InquiryTable{
     int stationnum;
     int [][] c;
+    final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    final Lock r = rwl.readLock();
+    final Lock w = rwl.writeLock();
 
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
@@ -42,24 +47,25 @@ class InquiryTable{
 
     public int inq(int dept, int arr){
         // System.err.println("inq "+dept+" "+arr+" "+c[dept][arr]);
-        return c[dept][arr];
-    }
-
-    public void buy(int dept, int arr, int left, int right){
-        int i,j;
-        for(i=left; i<arr; i++){
-            for(j=dept+1; j<=right+1; j++){
-                c[i][j]--;
-            }
+        try{
+            r.lock();
+            return c[dept][arr];
+        } finally {
+            r.unlock();
         }
     }
 
-    public void refund(int dept, int arr, int left, int right){
-        int i,j;
-        for(i=left; i<arr; i++){
-            for(j=dept+1; j<=right+1; j++){
-                c[i][j]++;
-            }
+    public void update(int dept, int arr, int left, int right, int inc){
+        try{
+            w.lock();
+            int i,j;
+            for(i=left; i<arr; i++){
+                for(j=dept+1; j<=right+1; j++){
+                    c[i][j] += inc;
+                }
+            }   
+        } finally {
+            w.unlock();
         }
     }
 
@@ -115,20 +121,11 @@ public class Train {
                 // System.err.println("HELLEN");
                 int left, right;
 
-
-                if(0 == departure){ 
-                    left = 0;
-                } else {
-                    left = seats[i].taken.previousSetBit(departure-1) + 1;
-                }
-
+                left = (0 == departure) ? 0 : seats[i].taken.previousSetBit(departure-1) + 1;
                 right = seats[i].taken.nextSetBit(arrival) - 1;
                 if(-2 == right) right = stationnum - 2;
 
-
-
-
-                inqTable.buy(departure, arrival, left, right);
+                inqTable.update(departure, arrival, left, right, -1);
 
                 return t;
             }
@@ -146,16 +143,12 @@ public class Train {
         //!! left index out of boundary exception\
         // returns -1 if no such set bit
         int left, right;
-        if(0 == dept){ 
-            left = 0;
-        } else {
-            left = seats[sid].taken.previousSetBit(dept-1) + 1;
-        }
 
+        left = (0 == dept) ? 0 : seats[sid].taken.previousSetBit(dept-1) + 1;
         right = seats[sid].taken.nextSetBit(arr) - 1;
         if(-2 == right) right = stationnum - 2;
 
-        inqTable.refund(dept, arr, left, right);
+        inqTable.update(dept, arr, left, right, 1);
         // System.err.println("WTLL");
 
         seats[sid].clearSeat(dept, arr);
