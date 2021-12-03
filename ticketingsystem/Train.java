@@ -82,7 +82,7 @@ public class Train {
     Seat []seats;
     InquiryTable inqTable;
 
-    ReentrantLock []locks;
+    MCSLock []locks;
 
     final boolean debug = false;
 
@@ -98,10 +98,10 @@ public class Train {
         }
 
         //!!!!
-        locks = new ReentrantLock[coachnum];
+        locks = new MCSLock[coachnum];
         for(int i = 0; i < locks.length; i++){
             // System.err.println("lock " +i);
-            locks[i] = new ReentrantLock();
+            locks[i] = new MCSLock();
         }
 
         inqTable = new InquiryTable(stationnum, coachnum*seatnum);
