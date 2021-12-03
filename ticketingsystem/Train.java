@@ -3,6 +3,7 @@ package ticketingsystem;
 import java.util.*;
 import java.util.BitSet;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class Seat {
@@ -81,8 +82,7 @@ public class Train {
     Seat []seats;
     InquiryTable inqTable;
 
-    MCSLock []locks;
-    final int perLock = 1; // how many seats per lock
+    final ReentrantLock locks = new ReentrantLock();
 
     final boolean debug = false;
 
@@ -98,10 +98,11 @@ public class Train {
         }
 
         //!!!!
-        locks = new MCSLock[coachnum*seatnum/perLock];
-        for(int i = 0; i < locks.length; i++){
-            locks[i] = new MCSLock();
-        }
+        // locks = new MCSLock[coachnum*seatnum/perLock];
+        // for(int i = 0; i < locks.length; i++){
+        //     System.err.println("lock " +i);
+        //     locks[i] = new MCSLock();
+        // }
 
         inqTable = new InquiryTable(stationnum, coachnum*seatnum);
     }
@@ -115,10 +116,12 @@ public class Train {
             return null;
         }
 
+        
+
         int length = seats.length;
         for(int i=0; i<length; i++){
-            locks[i/perLock].lock();
-            
+            locks.lock();
+
             boolean tmp = seats[i].checkAvail(departure, arrival);
             if(tmp){
                 seats[i].orderSeat(departure, arrival);
@@ -136,12 +139,12 @@ public class Train {
                 if(-2 == right) right = stationnum - 2;
 
                 inqTable.update(departure, arrival, left, right, -1);
-                locks[i/perLock].unlock();
+                locks.unlock();
 
                 return t;
             }
 
-            locks[i/perLock].unlock();
+            locks.unlock();
         }
         
         return null;
@@ -156,16 +159,18 @@ public class Train {
         // returns -1 if no such Set Bit
         int left, right;
 
+
+        locks.lock();
+
         left = (0 == dept) ? 0 : seats[i].taken.previousSetBit(dept-1) + 1;
         right = seats[i].taken.nextSetBit(arr) - 1;
         if(-2 == right) right = stationnum - 2;
 
-        inqTable.update(dept, arr, left, right, 1);
         // System.err.println("WTLL");
 
-        locks[i/perLock].lock();
         seats[i].clearSeat(dept, arr);
-        locks[i/perLock].unlock();
+	    inqTable.update(dept, arr, left, right, 1);
+        locks.unlock();
 
     }
 
