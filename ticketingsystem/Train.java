@@ -5,24 +5,49 @@ import java.util.BitSet;
 import java.util.concurrent.locks.*;
 
 class Seat {
-    public BitSet taken;
+    //!! byte?
+    // -1 means occupied
+    int []steps;
 
     public Seat(int stationnum){
-        taken = new BitSet(stationnum);
+        steps = new int[stationnum];
+        for(int i = 0; i < stationnum; i++){
+            steps[i] = stationnum - i - 1;
+        }
+
     }
 
-    public boolean checkAvail(int departure, int arrival){
-        return taken.get(departure, arrival).isEmpty();
+    public boolean checkAvail(int dept, int arr){
+        return steps[dept] >= (arr - dept);
     }
 
-    public void orderSeat(int departure, int arrival){
-        taken.set(departure, arrival);
+    public void orderSeat(int dept, int arr){
+        int init = 0;
+        for(int i=dept-1; i>=0 && steps[i]!=-1; i--) steps[i]=++init;
+        for(int i=dept; i<arr; i++) steps[i]=-1;
     }
 
-    public void clearSeat(int departure, int arrival){
-        taken.clear(departure, arrival);
+    public void clearSeat(int dept, int arr){
+        int init = steps[arr];
+        for(int i=arr-1; i>=0 && ( i>=dept || steps[i]!= -1); i--){
+            steps[i] = ++init;
+        }
+    }
+
+    public int findLeft(int dept){
+        if(0 == dept) return 0;
+        int i;
+        for(i=dept-1; i>=0 && steps[i]!= -1; i--){}
+        return (i<0)? 0 : i+1;
     }
     
+    public int findRight(int arr){
+        int stationnum = steps.length;
+        int i;        
+        for(i=arr; i<stationnum && steps[i]!= -1; i++){}
+        return (i==stationnum)? stationnum-2 : i-1; 
+    }
+
 }
 
 class InquiryTable{
@@ -95,7 +120,6 @@ public class Train {
             seats[i] = new Seat(stationnum);
         }
 
-        //!!!!
         locks = new MCSLock[coachnum];
         for(int i = 0; i < locks.length; i++){
             // System.err.println("lock " +i);
@@ -105,16 +129,15 @@ public class Train {
         inqTable = new InquiryTable(stationnum, coachnum*seatnum);
     }
 
-    public int inquiry(int departure, int arrival){
-        return inqTable.inq(departure, arrival);
+    public int inquiry(int dept, int arr){
+        return inqTable.inq(dept, arr);
     }    
 
-    public Ticket buyTicket(int departure, int arrival){
-        if(inqTable.inq(departure, arrival) <= 0){
+    public Ticket buyTicket(int dept, int arr){
+        if(inqTable.inq(dept, arr) <= 0){
             return null;
         }
 
-        
         int i,j, sid;
         for(i=0; i<coachnum; i++){
             locks[i].lock();
@@ -122,25 +145,21 @@ public class Train {
             for(j=0; j<seatnum; j++){
                 sid = i*seatnum + j;
 
-                boolean tmp = seats[sid].checkAvail(departure, arrival);
+                boolean tmp = seats[sid].checkAvail(dept, arr);
                 if(tmp){
-                    seats[sid].orderSeat(departure, arrival);
-                    // System.err.println("HELLEN");
-                    int left, right;
-
-                    left = (0 == departure) ? 0 : seats[sid].taken.previousSetBit(departure-1) + 1;
-                    right = seats[sid].taken.nextSetBit(arrival) - 1;
-                    if(-2 == right) right = stationnum - 2;
-
-                    inqTable.update(departure, arrival, left, right, -1);
+                    seats[sid].orderSeat(dept, arr);
+                    int left = seats[sid].findLeft(dept);
+                    int right = seats[sid].findRight(arr);
+                    inqTable.update(dept, arr, left, right, -1);
+                    
                     locks[i].unlock();
                     
                     Ticket t = new Ticket();
                     t.route = routeId + 1;
                     t.coach = i + 1;
                     t.seat = j + 1;
-                    t.departure = departure + 1;
-                    t.arrival = arrival + 1;
+                    t.departure = dept + 1;
+                    t.arrival = arr + 1;
                     return t;
                 }
             } // end seat iter
@@ -156,20 +175,14 @@ public class Train {
         int dept = t.departure - 1;
         int arr = t.arrival - 1;    
 
-        // returns -1 if no such Set Bit
-        int left, right;
-
 
         locks[t.coach-1].lock();
 
-        left = (0 == dept) ? 0 : seats[sid].taken.previousSetBit(dept-1) + 1;
-        right = seats[sid].taken.nextSetBit(arr) - 1;
-        if(-2 == right) right = stationnum - 2;
-
-        // System.err.println("WTLL");
-
+        int left = seats[sid].findLeft(dept);
+        int right = seats[sid].findRight(arr);
         seats[sid].clearSeat(dept, arr);
 	    inqTable.update(dept, arr, left, right, 1);
+
         locks[t.coach-1].unlock();
 
     }
