@@ -14,18 +14,9 @@ class SoldTickets{
     }
 
     public boolean checkAndRemove(Ticket refund){
-                    System.err.println("CHECKING REFUND");
-
 		Ticket sold = tickets.get(refund.tid);
         // if first true, directly return false 
         if( null == sold) return false;
-
-		System.err.println(sold.passenger+" "+refund.passenger);
-		System.err.println(sold.coach+" "+refund.coach);
-		System.err.println(sold.seat+" "+refund.seat);
-		System.err.println(sold.departure+" "+refund.departure);
-		System.err.println(sold.arrival+" "+refund.arrival);
-
 		if(!sold.passenger.equals(refund.passenger) ||
             sold.route != refund.route ||
             sold.coach != refund.coach ||
@@ -33,10 +24,8 @@ class SoldTickets{
             sold.departure != refund.departure ||
             sold.arrival != refund.arrival)
         {
-            System.err.println("FAKE TICKET");
             return false;
         }
-		System.err.println("YEAH");
 
         tickets.remove(refund.tid, refund);
         return true;
