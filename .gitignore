@@ -27,3 +27,4 @@ trace
 *.bak
 logtest
 donetest
+!VeriLinS.jar
