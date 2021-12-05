@@ -12,7 +12,8 @@ class Seat {
     }
 
     public boolean checkAvail(int dept, int arr){
-        return taken.get(dept, arr).isEmpty();
+        if(taken.get(dept)) return false;
+        return taken.get(dept+1, arr).isEmpty();
     }
 
     public void orderSeat(int dept, int arr){
