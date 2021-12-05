@@ -59,10 +59,10 @@ class Seat {
 class InquiryTable{
     int stationnum;
     int [][] c;
-    final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-    final Lock r = rwl.readLock();
-    final Lock w = rwl.writeLock();
-
+    // ReentrantReadWriteLock []rwl;
+    // Lock []r;
+    // Lock []w;
+    MCSLock []lockLine;
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
 
@@ -73,34 +73,46 @@ class InquiryTable{
                 c[i][j] = totalSeatnum;
             }
         }
+
+        // rwl = new ReentrantReadWriteLock[stationnum];
+        // r = new Lock[stationnum];
+        // w = new Lock[stationnum];
+        lockLine = new MCSLock[stationnum];
+        for(i = 0; i < stationnum; i++) {
+            // rwl[i] = new ReentrantReadWriteLock();
+            // r[i] = rwl[i].readLock();
+            // w[i] = rwl[i].writeLock();
+            lockLine[i] = new MCSLock();
+        }
+
     }
 
     public int inq(int dept, int arr){
-        // System.err.println("inq "+dept+" "+arr+" "+c[dept][arr]);
-        try{
-            r.lock();
+        // try{
+            // r[dept].lock();
             return c[dept][arr];
-        } finally {
-            r.unlock();
-        }
+        // } finally {
+            // r[dept].unlock();
+        // }
     }
 
     public void update(int dept, int arr, int left, int right, int inc){
-        try{
-            w.lock();
-            int i,j;
-            for(i=left; i<arr; i++){
-                for(j=dept+1; j<=right+1; j++){
-                    c[i][j] += inc;
-                }
-            }   
-        } finally {
-            w.unlock();
+        int i,j;
+        for(i=left; i<arr; i++){
+            // w[i].lock();
+            lockLine[i].lock();
+        }
+        for(i=left; i<arr; i++){
+            for(j=dept+1; j<=right+1; j++){
+                c[i][j] += inc;
+            }
+        }   
+        for(i=left; i<arr; i++){
+            // w[i].unlock();
+            lockLine[i].unlock();
         }
     }
-
 }
-
 
 public class Train {
     int routeId;
