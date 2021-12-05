@@ -90,7 +90,6 @@ class InquiryTable{
     }
 }
 
-
 public class Train {
     int routeId;
     int coachnum = 8;
@@ -115,10 +114,8 @@ public class Train {
             seats[i] = new Seat(stationnum);
         }
 
-        //!!!!
         locks = new MCSLock[coachnum];
         for(int i = 0; i < locks.length; i++){
-            // System.err.println("lock " +i);
             locks[i] = new MCSLock();
         }
 
@@ -133,7 +130,6 @@ public class Train {
         if(inqTable.inq(dept, arr) <= 0){
             return null;
         }
-
         
         int i,j, sid;
         for(i=0; i<coachnum; i++){
@@ -172,8 +168,6 @@ public class Train {
         int sid = (t.coach-1)*seatnum + (t.seat-1);
         int dept = t.departure - 1;
         int arr = t.arrival - 1;    
-
-
 
         locks[t.coach-1].lock();
 
