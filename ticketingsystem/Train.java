@@ -2,6 +2,7 @@ package ticketingsystem;
 
 import java.util.*;
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.*;
 
 class Seat {
@@ -12,7 +13,8 @@ class Seat {
     }
 
     public boolean checkAvail(int dept, int arr){
-        return taken.get(dept, arr).isEmpty();
+        if(taken.get(dept)) return false;
+        return taken.get(dept+1, arr).isEmpty();
     }
 
     public void orderSeat(int dept, int arr){
@@ -103,6 +105,8 @@ public class Train {
 
     final boolean debug = false;
 
+    int []peeks;
+
     public Train(int routeId, int coachnum, int seatnum, int stationnum){
         this.routeId = routeId;
         this.coachnum = coachnum;
@@ -115,11 +119,15 @@ public class Train {
         }
 
         locks = new MCSLock[coachnum];
-        for(int i = 0; i < locks.length; i++){
+        peeks = new int[coachnum];
+        
+        for(int i = 0; i < coachnum; i++){
             locks[i] = new MCSLock();
+            peeks[i] = 0;
         }
 
         inqTable = new InquiryTable(stationnum, coachnum*seatnum);
+
     }
 
     public int inquiry(int dept, int arr){
@@ -135,10 +143,40 @@ public class Train {
         for(i=0; i<coachnum; i++){
             locks[i].lock();
 
-            for(j=0; j<seatnum; j++){
+                j = peeks[i];
                 sid = i*seatnum + j;
 
                 boolean tmp = seats[sid].checkAvail(dept, arr);
+                if(tmp){
+                    System.err.println("Hit PEEK");
+                    seats[sid].orderSeat(dept, arr);
+
+                    int left = seats[sid].findLeft(dept);
+                    int right = seats[sid].findRight(arr, stationnum);
+
+                    inqTable.update(dept, arr, left, right, -1);
+                    locks[i].unlock();
+                    
+                    Ticket t = new Ticket();
+                    t.route = routeId + 1;
+                    t.coach = i + 1;
+                    t.seat = j + 1;
+                    t.departure = dept + 1;
+                    t.arrival = arr + 1;
+                    return t;
+                }
+
+                
+
+
+
+
+
+
+            for(j=0; j<seatnum; j++){
+                sid = i*seatnum + j;
+
+                tmp = seats[sid].checkAvail(dept, arr);
                 if(tmp){
                     seats[sid].orderSeat(dept, arr);
 
@@ -173,6 +211,11 @@ public class Train {
 
         int left = seats[sid].findLeft(dept);
         int right = seats[sid].findRight(arr, stationnum);
+
+
+
+        peeks[t.coach-1] = t.seat-1;
+
 
         seats[sid].clearSeat(dept, arr);
 	    inqTable.update(dept, arr, left, right, 1);
