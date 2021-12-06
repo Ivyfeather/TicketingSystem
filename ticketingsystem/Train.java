@@ -7,28 +7,28 @@ import java.util.concurrent.locks.*;
 class Seat {
     //!! byte?
     // -1 means occupied
-    int []steps;
+    byte []steps;
 
     public Seat(int stationnum){
-        steps = new int[stationnum];
+        steps = new byte[stationnum];
         for(int i = 0; i < stationnum; i++){
-            steps[i] = stationnum - i - 1;
+            steps[i] = (byte)(stationnum - i - 1);
         }
 
     }
 
-    public boolean checkAvail(int dept, int arr){
-        return steps[dept] >= (arr - dept);
+    public boolean checkAvail(int dept, int dist){
+        return steps[dept] >= dist;
     }
 
     public void orderSeat(int dept, int arr){
-        int init = 0;
+        byte init = 0;
         for(int i=dept-1; i>=0 && steps[i]!=-1; i--) steps[i]=++init;
         for(int i=dept; i<arr; i++) steps[i]=-1;
     }
 
     public void clearSeat(int dept, int arr){
-        int init = steps[arr];
+        byte init = (byte)steps[arr];
         if(-1 == init) init = 0;
         for(int i=arr-1; i>=0 && ( i>=dept || steps[i]!= -1); i--){
             steps[i] = ++init;
@@ -58,7 +58,7 @@ class Seat {
 
 class InquiryTable{
     int stationnum;
-    int [][] c;
+    byte [][] c;
     // ReentrantReadWriteLock []rwl;
     // Lock []r;
     // Lock []w;
@@ -66,11 +66,11 @@ class InquiryTable{
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
 
-        c = new int[stationnum][stationnum];
+        c = new byte[stationnum][stationnum];
         int i,j;
         for(i=0; i<stationnum; i++){
             for(j=0; j<stationnum; j++){
-                c[i][j] = totalSeatnum;
+                c[i][j] = (byte)totalSeatnum;
             }
         }
 
@@ -157,13 +157,14 @@ public class Train {
         }
 
         int i,j, sid;
+        int dist = arr - dept;
         for(i=0; i<coachnum; i++){
             locks[i].lock();
 
             for(j=0; j<seatnum; j++){
                 sid = i*seatnum + j;
 
-                boolean tmp = seats[sid].checkAvail(dept, arr);
+                boolean tmp = seats[sid].checkAvail(dept, dist);
                 if(tmp){
                     seats[sid].orderSeat(dept, arr);
                     int left = seats[sid].findLeft(dept);
