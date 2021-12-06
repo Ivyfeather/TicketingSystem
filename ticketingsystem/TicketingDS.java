@@ -4,34 +4,6 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-class SoldTickets{
-    final ConcurrentHashMap<Long, Ticket> tickets = new ConcurrentHashMap<Long, Ticket>();
-    
-    public void add(Ticket t){
-        if(null != tickets.put(t.tid, t)){
-            System.err.println("ERROR: TID ALREADY EXISTS");
-        }
-    }
-
-    public boolean checkAndRemove(Ticket refund){
-		Ticket sold = tickets.get(refund.tid);
-        // if first true, directly return false 
-        if( null == sold) return false;
-		if(!sold.passenger.equals(refund.passenger) ||
-            sold.route != refund.route ||
-            sold.coach != refund.coach ||
-            sold.seat  != refund.seat  ||
-            sold.departure != refund.departure ||
-            sold.arrival != refund.arrival)
-        {
-            return false;
-        }
-
-        tickets.remove(refund.tid, refund);
-        return true;
-
-    }
-}
 
 public class TicketingDS implements TicketingSystem {
 	AtomicLong tid = new AtomicLong(1);
@@ -85,4 +57,33 @@ public class TicketingDS implements TicketingSystem {
 	public boolean refundTicketReplay(Ticket t){
 		return true;
 	}	
+}
+
+class SoldTickets{
+    final ConcurrentHashMap<Long, Ticket> tickets = new ConcurrentHashMap<Long, Ticket>();
+    
+    public void add(Ticket t){
+        if(null != tickets.put(t.tid, t)){
+            System.err.println("ERROR: TID ALREADY EXISTS");
+        }
+    }
+
+    public boolean checkAndRemove(Ticket refund){
+		Ticket sold = tickets.get(refund.tid);
+        // if first true, directly return false 
+        if( null == sold) return false;
+		if(!sold.passenger.equals(refund.passenger) ||
+            sold.route != refund.route ||
+            sold.coach != refund.coach ||
+            sold.seat  != refund.seat  ||
+            sold.departure != refund.departure ||
+            sold.arrival != refund.arrival)
+        {
+            return false;
+        }
+
+        tickets.remove(refund.tid, refund);
+        return true;
+
+    }
 }
