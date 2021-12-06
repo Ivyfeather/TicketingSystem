@@ -5,8 +5,8 @@ import java.util.BitSet;
 import java.util.concurrent.locks.*;
 
 class Seat {
-    //!! byte?
-    // -1 means occupied
+    //  can order step[i] means stations from i
+    //  0 means occupied
     byte []steps;
 
     public Seat(int stationnum){
@@ -14,7 +14,6 @@ class Seat {
         for(int i = 0; i < stationnum; i++){
             steps[i] = (byte)(stationnum - i - 1);
         }
-
     }
 
     public boolean checkAvail(int dept, int dist){
@@ -23,33 +22,29 @@ class Seat {
 
     public void orderSeat(int dept, int arr){
         byte init = 0;
-        for(int i=dept-1; i>=0 && steps[i]!=-1; i--) steps[i]=++init;
-        for(int i=dept; i<arr; i++) steps[i]=-1;
+        for(int i=dept-1; i>=0 && steps[i]!=0; i--) steps[i]=++init;
+        for(int i=dept; i<arr; i++) steps[i]=0;
     }
 
     public void clearSeat(int dept, int arr){
         byte init = (byte)steps[arr];
-        if(-1 == init) init = 0;
-        for(int i=arr-1; i>=0 && ( i>=dept || steps[i]!= -1); i--){
+        for(int i=arr-1; i>=0 && ( i>=dept || steps[i]!= 0); i--){
             steps[i] = ++init;
         }
     }
 
     public int findLeft(int dept){
         if(0 == dept) return 0;
-        int i;
-        for(i=dept-1; i>=0; i--){
-            if(-1 == steps[i]) return i+1;
+        for(int i=dept-1; i>=0; i--){
+            if(0 == steps[i]) return i+1;
         }
         return 0;
-
     }
     
     public int findRight(int arr){
         int stationnum = steps.length;
-        int i;        
-        for(i=arr; i<stationnum; i++){
-            if(-1 == steps[i]) return i-1;
+        for(int i=arr; i<stationnum; i++){
+            if(0 == steps[i]) return i-1;
         }
         return stationnum-2;
     }
