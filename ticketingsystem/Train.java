@@ -39,9 +39,10 @@ class Seat {
 class InquiryTable{
     int stationnum;
     int [][] c;
-    ReentrantReadWriteLock []rwl;
-    Lock []r;
-    Lock []w;
+    // ReentrantReadWriteLock []rwl;
+    // Lock []r;
+    // Lock []w;
+    MCSLock []lockLine;
 
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
@@ -54,31 +55,33 @@ class InquiryTable{
             }
         }
 
-        rwl = new ReentrantReadWriteLock[stationnum];
-        r = new Lock[stationnum];
-        w = new Lock[stationnum];
-        for(i = 0; i < rwl.length; i++) {
-            rwl[i] = new ReentrantReadWriteLock();
-            r[i] = rwl[i].readLock();
-            w[i] = rwl[i].writeLock();
+        // rwl = new ReentrantReadWriteLock[stationnum];
+        // r = new Lock[stationnum];
+        // w = new Lock[stationnum];
+        lockLine = new MCSLock[stationnum];
+        for(i = 0; i < stationnum; i++) {
+            // rwl[i] = new ReentrantReadWriteLock();
+            // r[i] = rwl[i].readLock();
+            // w[i] = rwl[i].writeLock();
+            lockLine[i] = new MCSLock();
         }
 
     }
 
     public int inq(int dept, int arr){
-        // System.err.println("inq "+dept+" "+arr+" "+c[dept][arr]);
-        try{
-            r[dept].lock();
+        // try{
+            // r[dept].lock();
             return c[dept][arr];
-        } finally {
-            r[dept].unlock();
-        }
+        // } finally {
+            // r[dept].unlock();
+        // }
     }
 
     public void update(int dept, int arr, int left, int right, int inc){
         int i,j;
         for(i=left; i<arr; i++){
-            w[i].lock();
+            // w[i].lock();
+            lockLine[i].lock();
         }
         for(i=left; i<arr; i++){
             for(j=dept+1; j<=right+1; j++){
@@ -86,14 +89,15 @@ class InquiryTable{
             }
         }   
         for(i=left; i<arr; i++){
-            w[i].unlock();
+            // w[i].unlock();
+            lockLine[i].unlock();
         }
     }
 }
 
 public class Train {
     int routeId;
-    int coachnum = 8;
+    int coachnum = 10;
     int seatnum = 100;
     int stationnum = 10;
 
