@@ -25,29 +25,23 @@ public class Replay{
     static int debugMode = 1;
 
     static ArrayList<HistoryLine> history = new ArrayList<HistoryLine>();
+	static int callId = 0; // unique call id 
     static TicketingDS object;
-    public static class hl_Comparator_1 implements Comparator<HistoryLine>{
+
+	public static class HistoryComparator implements Comparator<HistoryLine>{
 		@Override
-		public int compare(HistoryLine hl1, HistoryLine hl2){
-			if(hl1.pretime - hl2.pretime > 0)
-			return 1;
-			else if(hl1.pretime - hl2.pretime == 0)
-			return 0;
+		public int compare(HistoryLine h1, HistoryLine h2){
+			long h1Time = (h1.isReturn)? h1.posttime : h1.pretime;
+			long h2Time = (h2.isReturn)? h2.posttime : h2.pretime;
+			if(h1Time - h2Time > 0)
+				return 1;
+			else if(h1Time - h2Time == 0)
+				return 0;
 			else
-			return -1;
+				return -1;
 		};
-    }
-    public static class hl_Comparator_2 implements Comparator<HistoryLine>{
-		@Override
-		public int compare(HistoryLine hl1, HistoryLine hl2){
-			if(hl1.posttime - hl2.posttime > 0)
-			return 1;
-			else if(hl1.posttime - hl2.posttime == 0)
-			return 0;
-			else
-			return -1;
-		};
-    }
+	}
+
     public static class HistoryLine{
 		long pretime;
 		long posttime;
@@ -61,7 +55,26 @@ public class Replay{
 		int departure;
 		int arrival;
 		String res;
+		boolean isReturn;
+		int callId;
 
+		public HistoryLine(){}
+		public HistoryLine(HistoryLine h){
+			this.pretime = h.pretime;
+			this.posttime = h.posttime;
+			this.threadid = h.threadid;
+			this.operationName = h.operationName;
+			this.tid = h.tid;
+			this.passenger = h.passenger;
+			this.route = h.route;
+			this.coach = h.coach;
+			this.seat = h.seat;
+			this.departure = h.departure;
+			this.arrival = h.arrival;
+			this.res = h.res;
+			this.isReturn = h.isReturn;
+			this.callId = h.callId;
+		}
     }
 // Scanning line and parse history
     private static boolean parseline(ArrayList<HistoryLine> historyList, String line) {
@@ -70,20 +83,32 @@ public class Replay{
 			linescanner.close();
 			return true;
 		}
-		HistoryLine tl = new HistoryLine();
-		tl.pretime = linescanner.nextLong();
-		tl.posttime = linescanner.nextLong();
-		tl.threadid = linescanner.nextInt();
-		tl.operationName = linescanner.next();
-		tl.tid = linescanner.nextLong();
-		tl.passenger = linescanner.next();
-		tl.route = linescanner.nextInt();
-		tl.coach = linescanner.nextInt();
-		tl.departure = linescanner.nextInt();
-		tl.arrival = linescanner.nextInt();	
-		tl.seat = linescanner.nextInt();
-		tl.res = linescanner.next();
-		historyList.add(tl);
+		// add method call
+		HistoryLine t1 = new HistoryLine();
+		t1.pretime = linescanner.nextLong();
+		t1.posttime = linescanner.nextLong();
+		t1.threadid = linescanner.nextInt();
+		t1.operationName = linescanner.next();
+		t1.tid = linescanner.nextLong();
+		t1.passenger = linescanner.next();
+		t1.route = linescanner.nextInt();
+		t1.coach = linescanner.nextInt();
+		t1.departure = linescanner.nextInt();
+		t1.arrival = linescanner.nextInt();	
+		t1.seat = linescanner.nextInt();
+		t1.res = linescanner.next();
+		t1.callId = callId;
+		
+		// add method return 
+		HistoryLine t2 = new HistoryLine(t1); //!!!!!!!!
+		t2.callId = callId ++;
+		t2.isReturn = true;
+		
+		t1.posttime = 0;
+		t2.pretime = 0;
+		historyList.add(t1);
+		historyList.add(t2);
+
 		linescanner.close();
 		return true;
     }
@@ -93,6 +118,8 @@ public class Replay{
 		methodList.add("refundTicket");
 		methodList.add("buyTicket");
 		methodList.add("inquiry");
+		methodList.add("refundTicketReplay");
+		methodList.add("buyTicketReplay");
     }
     private static boolean execute(String methodName, HistoryLine line, int line_num){
 		Ticket ticket = new Ticket();
@@ -121,7 +148,7 @@ public class Replay{
 				ticket.passenger == ticket1.passenger && ticket.route == ticket1.route &&
 				ticket.coach == ticket1.coach && ticket.departure == ticket1.departure &&
 				ticket.arrival == ticket1.arrival && ticket.seat == ticket1.seat) {
-			return true;
+				return true;
 			} else {
 				System.out.println("Error: Ticket is bought" + " " + line.pretime + " " + line.posttime + " " + line.threadid + " " + ticket.tid + " " + ticket.passenger + " " + ticket.route + " " + ticket.coach    + " " + ticket.departure + " " + ticket.arrival + " " + ticket.seat);
 				return false;
@@ -130,7 +157,7 @@ public class Replay{
 		else if(methodName.equals("refundTicket")){
 			flag = object.refundTicket(ticket);
 			if((flag && line.res.equals("true")) || (!flag && line.res.equals("false")))
-			return true;
+				return true;
 			else {
 				System.out.println("Error: Ticket is refunded" + " " + line.pretime + " " + line.posttime + " " + line.threadid + " " + ticket.tid + " " + ticket.passenger + " " + ticket.route + " " + ticket.coach    + " " + ticket.departure + " " + ticket.arrival + " " + ticket.seat);
 				return false;
@@ -139,10 +166,26 @@ public class Replay{
 		else if(methodName.equals("inquiry")){
 			int num = object.inquiry(line.route, line.departure, line.arrival);
 			if(num == line.seat)
-			return true;
+				return true;
 			else {
 				System.out.println("Error: RemainTicket" + " " + line.pretime + " " + line.posttime + " " + line.threadid + " " + line.route + " " + line.departure + " " + line.arrival + " " + line.seat);
 				System.out.println("Real RemainTicket is" + " " + line.seat + " " + ", Expect RemainTicket is" + " " + num + ", " + line.route + " " + line.departure + " " + line.arrival);
+				return false;
+			}
+		}
+		else if(methodName.equals("buyTicketReplay")){
+			flag = object.buyTicketReplay(ticket);
+			if(flag) return true;
+			else{
+				System.out.println("Error: buyTicketReplay Failed");
+				return false;
+			}
+		}
+		else if(methodName.equals("refundTicketReplay")){
+			flag = object.refundTicketReplay(ticket);
+			if(flag) return true;
+			else{
+				System.out.println("Error: refundTicketReplay Failed");
 				return false;
 			}
 		}
@@ -167,7 +210,7 @@ public class Replay{
     }
     private static void writeline(ArrayList<HistoryLine> historyList, int line) {
 		HistoryLine tl = historyList.get(line);
-		System.out.println(tl.pretime + " " + tl.posttime + " " + tl.threadid + " " + tl.operationName + " " + tl.tid + " " + tl.passenger + " " + tl.route + " " + tl.coach    + " " + tl.departure + " " + tl.arrival + " " + tl.seat);
+		System.out.println(tl.callId + " " +tl.pretime + " " + tl.posttime + " " + tl.threadid + " " + tl.operationName + " " + tl.tid + " " + tl.passenger + " " + tl.route + " " + tl.coach    + " " + tl.departure + " " + tl.arrival + " " + tl.seat);
     }
     private static boolean readHistory(ArrayList<HistoryLine> historyList, String filename) {
 		try {
@@ -190,6 +233,7 @@ public class Replay{
 
 	private static boolean checkline(ArrayList<HistoryLine> historyList, int index){
 		HistoryLine line = historyList.get(index);
+		if(line.isReturn) return true;
 		
 		if (debugMode == 1) {
 			if (index == 158) {
@@ -209,7 +253,56 @@ public class Replay{
 		
     }
  
+	public static boolean isLinearizable(ArrayList<HistoryLine> historyList) {
+		if(historyList.isEmpty()) {
+			return true;
+		}
 
+		for(int i = 0; i < historyList.size(); i++){
+			HistoryLine line = historyList.get(i);
+			if(line.isReturn) break;
+
+			writeline(historyList, i);
+			
+			if(checkline(historyList, i)){
+				System.out.println("This first");
+				ArrayList<HistoryLine> next = new ArrayList<HistoryLine>(historyList);
+				
+				// find corresponding call and return
+				// then remove them from historylist, check the rest
+				int callId = line.callId;
+				int j;					
+				for(j = i + 1; j < historyList.size(); j++){
+					if(historyList.get(j).callId == callId) break;
+				}	
+				// System.out.println("Remove "+i+" "+j);
+				// System.out.println("Size or "+historyList.size()+" Size nw "+next.size());
+				next.remove(i);
+				// ==== WARING ==== 
+				// AFTER REMOVING i, THE INDEX OF j DECREASES 1
+				next.remove(j-1);
+
+				if(isLinearizable(next))
+					return true;
+
+			}
+			else{			
+				System.out.println("Try Next");
+	
+				if(line.operationName.equals("buyTicket")){
+					execute("buyTicketReplay", line, i);
+				}
+				else if(line.operationName.equals("refundTicket")){
+					execute("refundTicketReplay", line, i);
+				}
+				else{
+					System.out.println("No match REPLAY");
+					return false;
+				}
+			}
+		}
+		return false;
+	}
 
 
     @SuppressWarnings("unchecked")
@@ -235,24 +328,32 @@ public class Replay{
 		readHistory(history, fileName);
 		initialization();
 		startMs = System.currentTimeMillis();
-		if(!isPosttime){
-			hl_Comparator_1 com1 = new hl_Comparator_1();
-			Collections.sort(history, com1);
-		}
-		else{
-			hl_Comparator_2 com2 = new hl_Comparator_2();
-			Collections.sort(history, com2);
-		}
+
+		HistoryComparator com = new HistoryComparator();
+		Collections.sort(history, com);
 		
 		writeHistoryToFile(history, ft);
 
+		int callCount = 0;
+		ArrayList<HistoryLine> overlap = new ArrayList<HistoryLine>();
+
 		for(int i = 0; i < history.size(); i++){
-			if(!checkline(history, i)){
-				System.out.println("checkLine returns FALSE in line " + i);
-				break;
+			HistoryLine line = history.get(i);
+			overlap.add(line);
+
+			callCount += (line.isReturn)? -1 : 1;
+
+			if(0 == callCount){ // check overlap linearable
+				if(!isLinearizable(overlap)){
+					System.out.println("Linearization Check Failed");
+					break;
+				}
+				overlap.clear();
 			}
+
 		}
 		endMs = System.currentTimeMillis();
+		System.out.println("Linearization Check Passed");
 		System.out.println("checking time = " + (endMs - startMs));
     }
 }

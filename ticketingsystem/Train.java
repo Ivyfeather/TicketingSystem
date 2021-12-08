@@ -186,4 +186,18 @@ public class Train {
     }
 
 
+    public boolean refundTicketReplay(Ticket t){ 
+        int sid = (t.coach-1)*seatnum + (t.seat-1);
+        int dept = t.departure - 1;
+        int arr = t.arrival - 1;    
+        int left = seats[sid].findLeft(dept);
+        int right = seats[sid].findRight(arr, stationnum);
+   
+        if(!seats[sid].checkAvail(dept, arr)) return false;
+        seats[sid].orderSeat(dept, arr);
+        inqTable.update(dept, arr, left, right, -1);
+
+        return true;
+    }
+
 }

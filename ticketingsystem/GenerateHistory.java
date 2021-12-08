@@ -86,10 +86,10 @@ public class GenerateHistory {
 	  methodList.add("refundTicket");
 	  freqList.add(10);
 	  methodList.add("buyTicket");
-	  freqList.add(30);
+	  freqList.add(20);
 	  methodList.add("inquiry");
-	  freqList.add(60);
-	  totalPc = 100;
+	  freqList.add(0);
+	  totalPc = 30;
 	}
 	public static String getPassengerName() {
 		long uid = rand.nextInt(testnum);

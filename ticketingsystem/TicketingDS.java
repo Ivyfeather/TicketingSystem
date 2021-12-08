@@ -81,9 +81,13 @@ public class TicketingDS implements TicketingSystem {
 	}
 
 	public boolean buyTicketReplay(Ticket t){
-		return true;
+		// buyTicket failed, so buyTicketReplay does nothing
+		if(0 == t.seat) return true;
+		return refundTicket(t);
 	}
+
 	public boolean refundTicketReplay(Ticket t){
-		return true;
+		sold.add(t);
+		return trains[t.route-1].refundTicketReplay(t);
 	}	
 }
