@@ -29,8 +29,6 @@ class SoldTickets{
             sold.departure != refund.departure ||
             sold.arrival != refund.arrival)
         {
-			System.err.println("Sold");		sold.print();
-			System.err.println("Refund");	refund.print();
 			System.err.println("Check Sold Mismatch");
             return false;
         }

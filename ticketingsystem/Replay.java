@@ -102,7 +102,7 @@ public class Replay{
 		t1.callId = callId;
 		
 		// add method return 
-		HistoryLine t2 = new HistoryLine(t1); //!!!!!!!!
+		HistoryLine t2 = new HistoryLine(t1);
 		t2.callId = callId ++;
 		t2.isReturn = true;
 		
@@ -152,10 +152,6 @@ public class Replay{
 				ticket.arrival == ticket1.arrival && ticket.seat == ticket1.seat) {
 				return true;
 			} else {
-				System.out.println("NEW buy");
-				if(null != ticket1)	ticket1.print();
-				System.out.println("OLD buy");
-				ticket.print();
 				System.out.println("Error: Ticket is bought" + " " + line.pretime + " " + line.posttime + " " + line.threadid + " " + ticket.tid + " " + ticket.passenger + " " + ticket.route + " " + ticket.coach    + " " + ticket.departure + " " + ticket.arrival + " " + ticket.seat);
 				lastWrongBuy = ticket1;
 				return false;
@@ -183,7 +179,6 @@ public class Replay{
 		else if(methodName.equals("buyTicketReplay")){
 			flag = object.buyTicketReplay(lastWrongBuy);
 			System.out.println("Trying BuyReplay");
-			if(null != lastWrongBuy) lastWrongBuy.print();
 			if(flag) return true;
 			else{
 				System.out.println("Error: buyTicketReplay Failed");
@@ -193,7 +188,6 @@ public class Replay{
 		else if(methodName.equals("refundTicketReplay")){
 			flag = object.refundTicketReplay(ticket);
 			System.out.println("Trying RefundReplay");
-			ticket.print();
 			if(flag) return true;
 			else{
 				System.out.println("Error: refundTicketReplay Failed");
