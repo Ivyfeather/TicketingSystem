@@ -1,4 +1,4 @@
-ompiled class file
+# compiled class file
 *.class
 
 # Log file
@@ -28,3 +28,4 @@ trace
 logtest
 donetest
 !VeriLinS.jar
+!checker.jar
