@@ -26,6 +26,8 @@ public class Replay{
 
     static ArrayList<HistoryLine> history = new ArrayList<HistoryLine>();
 	static int callId = 0; // unique call id 
+	static Ticket lastWrongBuy;
+
     static TicketingDS object;
 
 	public static class HistoryComparator implements Comparator<HistoryLine>{
@@ -150,7 +152,12 @@ public class Replay{
 				ticket.arrival == ticket1.arrival && ticket.seat == ticket1.seat) {
 				return true;
 			} else {
+				System.out.println("NEW buy");
+				if(null != ticket1)	ticket1.print();
+				System.out.println("OLD buy");
+				ticket.print();
 				System.out.println("Error: Ticket is bought" + " " + line.pretime + " " + line.posttime + " " + line.threadid + " " + ticket.tid + " " + ticket.passenger + " " + ticket.route + " " + ticket.coach    + " " + ticket.departure + " " + ticket.arrival + " " + ticket.seat);
+				lastWrongBuy = ticket1;
 				return false;
 			}
 		}
@@ -174,7 +181,9 @@ public class Replay{
 			}
 		}
 		else if(methodName.equals("buyTicketReplay")){
-			flag = object.buyTicketReplay(ticket);
+			flag = object.buyTicketReplay(lastWrongBuy);
+			System.out.println("Trying BuyReplay");
+			if(null != lastWrongBuy) lastWrongBuy.print();
 			if(flag) return true;
 			else{
 				System.out.println("Error: buyTicketReplay Failed");
@@ -183,6 +192,8 @@ public class Replay{
 		}
 		else if(methodName.equals("refundTicketReplay")){
 			flag = object.refundTicketReplay(ticket);
+			System.out.println("Trying RefundReplay");
+			ticket.print();
 			if(flag) return true;
 			else{
 				System.out.println("Error: refundTicketReplay Failed");
@@ -210,7 +221,7 @@ public class Replay{
     }
     private static void writeline(ArrayList<HistoryLine> historyList, int line) {
 		HistoryLine tl = historyList.get(line);
-		System.out.println(tl.callId + " " +tl.pretime + " " + tl.posttime + " " + tl.threadid + " " + tl.operationName + " " + tl.tid + " " + tl.passenger + " " + tl.route + " " + tl.coach    + " " + tl.departure + " " + tl.arrival + " " + tl.seat);
+		System.out.println(tl.callId + " " +tl.pretime + " " + tl.posttime + " " + tl.threadid + " " + tl.operationName + " " + tl.tid + " " + tl.passenger + " " + tl.route + " " + tl.coach    + " " + tl.departure + " " + tl.arrival + " " + tl.seat + " " + tl.res);
     }
     private static boolean readHistory(ArrayList<HistoryLine> historyList, String filename) {
 		try {
@@ -270,13 +281,10 @@ public class Replay{
 				
 				// find corresponding call and return
 				// then remove them from historylist, check the rest
-				int callId = line.callId;
-				int j;					
+				int callId = line.callId, j;
 				for(j = i + 1; j < historyList.size(); j++){
 					if(historyList.get(j).callId == callId) break;
 				}	
-				// System.out.println("Remove "+i+" "+j);
-				// System.out.println("Size or "+historyList.size()+" Size nw "+next.size());
 				next.remove(i);
 				// ==== WARING ==== 
 				// AFTER REMOVING i, THE INDEX OF j DECREASES 1
@@ -284,21 +292,19 @@ public class Replay{
 
 				if(isLinearizable(next))
 					return true;
-
 			}
-			else{			
-				System.out.println("Try Next");
-	
-				if(line.operationName.equals("buyTicket")){
-					execute("buyTicketReplay", line, i);
-				}
-				else if(line.operationName.equals("refundTicket")){
-					execute("refundTicketReplay", line, i);
-				}
-				else{
-					System.out.println("No match REPLAY");
-					return false;
-				}
+					
+			System.out.println("Try Next");
+
+			if(line.operationName.equals("buyTicket")){
+				execute("buyTicketReplay", line, i);
+			}
+			else if(line.operationName.equals("refundTicket")){
+				execute("refundTicketReplay", line, i);
+			}
+			else{
+				System.out.println("No match REPLAY");
+				return false;
 			}
 		}
 		return false;
@@ -335,6 +341,7 @@ public class Replay{
 		writeHistoryToFile(history, ft);
 
 		int callCount = 0;
+		boolean passed = true;
 		ArrayList<HistoryLine> overlap = new ArrayList<HistoryLine>();
 
 		for(int i = 0; i < history.size(); i++){
@@ -345,15 +352,17 @@ public class Replay{
 
 			if(0 == callCount){ // check overlap linearable
 				if(!isLinearizable(overlap)){
+					passed = false;
 					System.out.println("Linearization Check Failed");
 					break;
 				}
 				overlap.clear();
+				System.out.println("Passed this overlap~");
 			}
 
 		}
 		endMs = System.currentTimeMillis();
-		System.out.println("Linearization Check Passed");
+		if(passed) System.out.println("Linearization Check Passed");
 		System.out.println("checking time = " + (endMs - startMs));
     }
 }

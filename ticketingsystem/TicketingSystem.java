@@ -8,6 +8,10 @@ class Ticket{
 	int seat;
 	int departure;
 	int arrival;
+
+	public void print(){
+		System.err.println("Ticket "+ tid + " "+ passenger + " " + route + " " + coach + " " + departure+ " "+arrival + " " + seat );
+	}
 }
 
 
