@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.*;
 
-<<<<<<< HEAD
 class SoldTickets{
     final ConcurrentHashMap<Long, Ticket> tickets = new ConcurrentHashMap<Long, Ticket>();
     
@@ -39,8 +38,6 @@ class SoldTickets{
     }
 }
 
-=======
->>>>>>> d9e900d71213004e3320be7461e090884a55ffa0
 public class TicketingDS implements TicketingSystem {
 	AtomicLong tid = new AtomicLong(1);
 	final SoldTickets sold = new SoldTickets();
