@@ -5,39 +5,6 @@ import java.util.concurrent.atomic.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.*;
 
-class SoldTickets{
-    final ConcurrentHashMap<Long, Ticket> tickets = new ConcurrentHashMap<Long, Ticket>();
-    
-    public void add(Ticket t){
-        if(null != tickets.put(t.tid, t)){
-            System.err.println("ERROR: TID ALREADY EXISTS");
-        }
-    }
-
-    public boolean checkAndRemove(Ticket refund){
-		Ticket sold = tickets.get(refund.tid);
-        // if first true, directly return false 
-        if( null == sold){
-			System.err.println("Check Sold Empty");
- 			return false;
-		}
-		if(!sold.passenger.equals(refund.passenger) ||
-            sold.route != refund.route ||
-            sold.coach != refund.coach ||
-            sold.seat  != refund.seat  ||
-            sold.departure != refund.departure ||
-            sold.arrival != refund.arrival)
-        {
-			System.err.println("Check Sold Mismatch");
-            return false;
-        }
-
-        tickets.remove(refund.tid, refund);
-        return true;
-
-    }
-}
-
 public class TicketingDS implements TicketingSystem {
 	AtomicLong tid = new AtomicLong(1);
 	final SoldTickets sold = new SoldTickets();
@@ -118,7 +85,10 @@ class SoldTickets{
     public boolean checkAndRemove(Ticket refund){
 		Ticket sold = tickets.get(refund.tid);
         // if first true, directly return false 
-        if( null == sold) return false;
+        if( null == sold){
+			System.err.println("Check Sold Empty");
+ 			return false;
+		}
 		if(!sold.passenger.equals(refund.passenger) ||
             sold.route != refund.route ||
             sold.coach != refund.coach ||
@@ -126,6 +96,7 @@ class SoldTickets{
             sold.departure != refund.departure ||
             sold.arrival != refund.arrival)
         {
+			System.err.println("Check Sold Mismatch");
             return false;
         }
 
