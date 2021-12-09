@@ -28,3 +28,4 @@ trace
 logtest
 donetest
 !VeriLinS.jar
+!checker.jar
