@@ -38,20 +38,19 @@ class Seat {
 
 class InquiryTable{
     int stationnum;
-    int [][] c;
+    byte [][] c;
     // ReentrantReadWriteLock []rwl;
     // Lock []r;
     // Lock []w;
     MCSLock []lockLine;
-
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
 
-        c = new int[stationnum][stationnum];
+        c = new byte[stationnum][stationnum];
         int i,j;
         for(i=0; i<stationnum; i++){
             for(j=0; j<stationnum; j++){
-                c[i][j] = totalSeatnum;
+                c[i][j] = (byte)totalSeatnum;
             }
         }
 
