@@ -24,6 +24,8 @@ public class Replay{
     
     static int debugMode = 1;
 
+	final static boolean printDebug = false;
+
     static ArrayList<HistoryLine> history = new ArrayList<HistoryLine>();
 	static int callId = 0; // unique call id 
 	static Ticket lastWrongBuy;
@@ -270,7 +272,7 @@ public class Replay{
 			writeline(historyList, i);
 			
 			if(checkline(historyList, i)){
-				System.out.println("This first");
+				System.out.println("This is the first move");
 				ArrayList<HistoryLine> next = new ArrayList<HistoryLine>(historyList);
 				
 				// find corresponding call and return
@@ -338,6 +340,12 @@ public class Replay{
 		boolean passed = true;
 		ArrayList<HistoryLine> overlap = new ArrayList<HistoryLine>();
 
+		try{
+			if(!printDebug) System.setOut(new PrintStream(new FileOutputStream("/dev/null")));
+		} catch(FileNotFoundException e) {
+			System.out.println(e);
+		}
+
 		for(int i = 0; i < history.size(); i++){
 			HistoryLine line = history.get(i);
 			overlap.add(line);
@@ -347,16 +355,18 @@ public class Replay{
 			if(0 == callCount){ // check overlap linearable
 				if(!isLinearizable(overlap)){
 					passed = false;
-					System.out.println("Linearization Check Failed");
 					break;
 				}
 				overlap.clear();
-				System.out.println("Passed this overlap~");
+				if(printDebug) System.out.println("Passed this overlap~");
 			}
 
 		}
 		endMs = System.currentTimeMillis();
+		if(!printDebug) System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+
 		if(passed) System.out.println("Linearization Check Passed");
+		else System.out.println("Linearization Check Failed");
 		System.out.println("checking time = " + (endMs - startMs));
     }
 }

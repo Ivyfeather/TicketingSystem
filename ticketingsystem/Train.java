@@ -38,7 +38,7 @@ class Seat {
 
 class InquiryTable{
     int stationnum;
-    byte [][] c;
+    int [][] c;
     // ReentrantReadWriteLock []rwl;
     // Lock []r;
     // Lock []w;
@@ -46,11 +46,11 @@ class InquiryTable{
     public InquiryTable(int stationnum, int totalSeatnum){
         this.stationnum = stationnum;
 
-        c = new byte[stationnum][stationnum];
+        c = new int[stationnum][stationnum];
         int i,j;
         for(i=0; i<stationnum; i++){
             for(j=0; j<stationnum; j++){
-                c[i][j] = (byte)totalSeatnum;
+                c[i][j] = (int)totalSeatnum;
             }
         }
 
